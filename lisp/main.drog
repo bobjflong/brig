@@ -1,0 +1,322 @@
+(Do
+
+  (display-version)
+
+  (Func display x) (Do (Show x) )
+
+  ;Map a list of items _x_ with a function _f_
+  (Func map f x)
+    (Do
+      (Let res (empty-list))
+      (Let list x)
+      (LoopUntil (not list)
+        (Do
+          (Send (Cons :push (Call f (Car list))) res)
+          (Let list (Cdr list))
+        )
+      )
+      res
+    )
+
+  ;Filter a list of items _x_ using a predicate _f_
+  (Func filter f x)
+    (Do
+      (Let res (empty-list))
+      (Let list x)
+      (LoopUntil (not list)
+        (Do
+          (Let pred-eval (Call f (Car list)))
+          (If pred-eval
+            (Send (Cons :push (Car list)) res)
+            null
+          )
+          (Let list (Cdr list))
+        )
+      )
+      res
+    )
+
+  (Func create-file name)
+    (Do
+      (exit-if-null name "No file name given")
+      (newline)
+      (Show (cat "Creating: " name))
+      (create-timestamped-file name)
+    )
+
+  (Func create-regex-from args)
+    (Do
+      ; search hello world
+      ; => hello world
+      (Let search-terms (Send (Cons :drop 1) arg))
+      ; => hello\-world
+      (Let search-terms (Send (Cons :join "\-") search-terms))
+      ; => /hello\-world/
+    )
+
+  (Func find-from-args args)
+    (Do
+      (Let regex (Call create-regex-from args))
+      (Func matching val ~(regex))
+        (Do
+          (Send (Cons :match regex) val) 
+        )
+      
+      (Call filter matching (get-posts))
+    )
+
+  (Func perform-search args)
+    (Do
+      (Let found (Call find-from-args args))
+      (newline)
+      (Show (cat "Found: " (Send "to_s" (Send :length found))))
+      (Call map display found)
+      (newline)
+    )
+
+  (Func edit-file args)
+    (Do
+      (Let found (Call find-from-args args))
+      (Let editor-cmd (Send (Cons "+" " ") editor))
+      
+      (Func open-editor post ~(editor-cmd))
+        (Do
+          (Let cmd (Send (Cons "+" post) editor-cmd))
+          (Send (Cons :system cmd) :Kernel)
+        )
+
+      (Call map open-editor found) 
+    )
+  
+  ; Print out a list of posts currently stored
+  (Func get-list-of-posts void)
+    (Do
+      (Func get-name f)
+        (Do
+          (extract-filename f)
+        )
+
+      (Let posts (get-posts))
+
+      (newline)
+      (Call map display (Call map get-name posts))
+      (newline)
+    )
+
+  (Func open-editor void)
+    (Do
+      (Send (Cons :system editor) :Kernel)
+    )
+
+  (Func generate-previous-page-link page-number)
+    (Do
+      (If (= page-number 0)
+        ""
+        (If (= page-number 1)
+          "index.html"
+          (cat (Send "to_s" (- page-number 1)) ".html")
+        )
+      )
+    )
+
+  (Func generate-next-page-link page-number max)
+    (Do
+      (If (= page-number max)
+        ""
+        (cat (Send "to_s" (+ page-number 1)) ".html")
+      )
+    )
+
+  (Func create-link to name)
+    (Do
+      (If (not (= to ""))
+        (cat
+          (cat "<a href=\'" to)
+          (cat "\'>"
+            (cat name "</a>")
+          )
+        )
+        ""
+      )
+    )
+
+  (Func create-html-page page html page-number max)
+    (Do
+      ;Load the layout.html
+      (Let layout
+        (Send (Cons :read template-location)
+              :File
+        )
+      )
+
+      (Let render-hash (Send :new :Hash))
+      (add-to-hash render-hash "yield" html)
+      (add-to-hash render-hash "prev_page"
+        (Call create-link
+          (Call generate-previous-page-link page-number)
+          "< prev"
+        )
+      )
+      (add-to-hash render-hash "next_page"
+        (Call create-link
+          (Call generate-next-page-link page-number max)
+          "next >"
+        )
+      )
+
+      (Let processed
+        (fill-tag render-hash in layout)
+      )
+
+      (Send
+        (Cons :write (Cons page processed))
+        :File
+      )
+
+      (newline)
+      (Show (cat "Built: " page))
+      (newline)
+    )
+
+  (Func zip-with left right)
+    (Do
+      (Let zip-instr (Cons "flat_zip" right))
+      (Send zip-instr left)
+    )
+
+  (Func create-linkable-file arg)
+    (Do
+      (Let posts arg)
+      (LoopUntil (not posts)
+        (Do
+          (Let post (Car posts))
+          (Let name (Car post))
+          (Let content (Car (Cdr (post))))
+
+          (Call create-html-page 
+            (cat "./site/"
+              (cat name ".html")
+            )
+            content 0 0
+          )
+
+          (Let posts (Cdr posts))
+        )
+      )
+    )
+
+  (Func create-posts-html void)
+    (Do
+      (Let posts 
+        (Send
+          (Cons "each_slice" page-size)
+          (get-posts)
+        )
+      )
+
+      (Let posts (Send "to_a" posts))
+      (Let number-of-pages (Send :length posts))
+      (Let i 0)
+
+      (LoopUntil (not posts)
+        (Do
+          (Let current-page (Car posts))
+          (Let pages-rendered
+            (Call map post-to-html current-page)
+          )
+          (Let file-name
+            (If (= i 0)
+              "./site/index.html"
+              (cat (cat "./site/" (Send "to_s" i)) ".html")
+            )
+          )
+
+          ;Write out the linkable page
+          (Call create-linkable-file (Call zip-with current-page pages-rendered))
+          
+          ; Build the file
+          (Call create-html-page file-name 
+            (Send (Cons :join "") pages-rendered)
+            i
+            (- number-of-pages 1 )
+          )
+
+          (Let i (+ i 1))
+          (Let posts (Cdr posts))
+        )
+      )
+    )
+
+  (Func view void)
+    (Do
+      (Send
+        (Cons :system server-cmd)
+        :Kernel
+      )
+    )
+
+  (Func post-to-html post)
+    (Do
+      (Let redcloth
+        (Send
+          (Cons :read post)
+          :File
+        )
+      )
+
+      ;Render in the link to itself
+      (Let render-hash (Send :new :Hash))
+      (add-to-hash render-hash "link" 
+        (cat "/site/"
+          (cat post ".html")
+        )
+      )
+
+      (Let redcloth (fill-tag render-hash in redcloth))
+      
+      (Let rc (Send (Cons :new redcloth) :RedCloth))
+      (Send "to_html" rc)
+
+    )
+  
+  ;For now (tired) just print out all rendered
+  (Func build void)
+    (Do
+      (Let posts (get-posts))
+      (Let html-list (Call map post-to-html posts))
+      (Send (Cons :join "") html-list)
+    )
+
+  (Func dispatch cmd)
+    (Do
+      (case (Send "to_s" cmd)
+        ("new"
+          (Call create-file (get-entered-name))
+        )
+        ("list"
+          (Call get-list-of-posts void)
+        )
+        ("editor"
+          (Call open-editor void)
+        )
+        ("edit"
+          (Call edit-file arg)
+        )
+        ("search"
+          (Call perform-search arg)
+        )
+        ("publish"
+          (Call publish void)
+        )
+        ("build"
+          (Call create-posts-html void) 
+        )
+        ("view"
+          (Call view void)
+        )
+      )
+    )
+
+  (Call dispatch (arg 0))
+  
+)

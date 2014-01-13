@@ -1,0 +1,8 @@
+(Do
+  (Let version "0.0.1")
+  (Let editor  "vim")
+  (Let template-location "./templates/layout.html")
+  (Let page-size 2)
+  (Let view-cmd "open http://localhost:8000")
+  (Let server-cmd "ruby -run -e httpd . -p 8000")
+)

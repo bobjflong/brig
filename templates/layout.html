@@ -1,0 +1,41 @@
+
+<!doctype html>
+<html>
+  <head>
+    <title>Example brig site</title>
+    <link href='http://fonts.googleapis.com/css?family=Antic+Didone' rel='stylesheet' type='text/css'>
+    
+    <style>
+      h1 {
+        font-size:30px;
+      }
+      h3, h1 {
+        font-family: 'Antic Didone', serif;
+      }
+      p {
+        font-family:sans-serif;
+        font-weight:lighter;
+        max-width:500px;
+        font-size:13px;
+      }
+      pre {
+        max-width:500px;
+        background: lightsteelblue;
+        padding: 10px;
+        color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Example brig site</h1>
+    <p>You can edit this template file in </p>
+    <pre>./templates/layout.html</pre>
+
+    {{{ yield }}}
+
+    {{{ prev_page }}}
+
+    {{{ next_page }}}
+
+  </body>
+</html>
