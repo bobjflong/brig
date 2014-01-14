@@ -180,7 +180,7 @@
 
   (Func zip-with left right)
     (Do
-      (Let zip-instr (Cons "flat_zip" right))
+      (Let zip-instr (Cons "zip" (Cons right (empty-list))))
       (Send zip-instr left)
     )
 
