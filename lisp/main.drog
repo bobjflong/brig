@@ -1,5 +1,7 @@
 (Do
 
+  {{{ config }}}
+
   (display-version)
 
   (Func display x) (Do (Show x) )
@@ -17,7 +19,7 @@
       )
       res
     )
-
+  
   ;Filter a list of items _x_ using a predicate _f_
   (Func filter f x)
     (Do
@@ -35,7 +37,7 @@
       )
       res
     )
-
+  
   (Func create-file name)
     (Do
       (exit-if-null name "No file name given")
