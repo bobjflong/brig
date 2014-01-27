@@ -177,7 +177,6 @@
 
       (newline)
       (Show (cat "Built: " page))
-      (newline)
     )
 
   (Func zip-with left right)
