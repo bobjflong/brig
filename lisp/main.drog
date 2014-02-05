@@ -79,11 +79,11 @@
   (Func edit-file args)
     (Do
       (Let found (Call find-from-args args))
-      (Let editor-cmd (Send (Cons "+" " ") editor))
+      (Let editor-cmd (cat editor " "))
       
       (Func open-editor post ~(editor-cmd))
         (Do
-          (Let cmd (Send (Cons "+" post) editor-cmd))
+          (Let cmd (cat editor-cmd post))
           (Send (Cons :system cmd) :Kernel)
         )
 
