@@ -142,15 +142,17 @@
       )
     )
 
-  (Func create-html-page page html page-number max)
+ ; ======================================================================= 
+ ; create-html-page
+ ; given:
+ ; page - the name of the post
+ ; html - the html content to be written
+ ; page-number - the number of the current page (used for pagination)
+ ; the max number of pages (used to generate next link)
+ ;========================================================================
+  
+  (Func create-render-hash-for-page html page-number max)
     (Do
-      ;Load the layout.html
-      (Let layout
-        (Send (Cons :read template-location)
-              :File
-        )
-      )
-
       (Let render-hash (Send :new :Hash))
       (add-to-hash render-hash "yield" html)
       (add-to-hash render-hash "prev_page"
@@ -165,9 +167,22 @@
           "next >"
         )
       )
+      (render-hash)
+    )
 
+  (Func create-html-page page html page-number max)
+    (Do
+      ;Load the layout.html
+      (Let layout
+        (Send (Cons :read template-location)
+              :File
+        )
+      )
+      
+      ; Process the template page by passing in the html content and pagination links
+      ; These are stored in the render hash as keys: yield, next_page, prev_page
       (Let processed
-        (fill-tag render-hash in layout)
+        (fill-tag (Call create-render-hash-for-page html page-number max) in layout)
       )
 
       (Send
@@ -206,6 +221,16 @@
       )
     )
 
+  (Func create-file-name-for-paginated i)
+    (Do
+      (Let file-name
+        (If (= i 0)
+          "./site/index.html"
+          (cat (cat "./site/" (Send "to_s" i)) ".html")
+        )
+      )
+    )
+
   (Func create-posts-html void)
     (Do
       (Let posts 
@@ -221,21 +246,15 @@
 
       (LoopUntil (not posts)
         (Do
+          ; Grab the current file name --- render it, and name it.
           (Let current-page (Car posts))
-          (Let pages-rendered
-            (Call map post-to-html current-page)
-          )
-          (Let file-name
-            (If (= i 0)
-              "./site/index.html"
-              (cat (cat "./site/" (Send "to_s" i)) ".html")
-            )
-          )
-
-          ;Write out the linkable page
+          (Let pages-rendered (Call map post-to-html current-page))
+          (Let file-name (Call create-file-name-for-paginated i))
+    
+          ; Write out the linkable page
           (Call create-linkable-file (Call zip-with current-page pages-rendered))
           
-          ; Build the file
+          ; Build the file by joining everything that has been rendered for this page
           (Call create-html-page file-name 
             (Send (Cons :join "") pages-rendered)
             i
@@ -256,6 +275,17 @@
       )
     )
 
+  (Func create-render-hash-for-post post)
+    (Do
+      (Let render-hash (Send :new :Hash))
+      (add-to-hash render-hash "link" 
+        (cat "/site/"
+          (cat post ".html")
+        )
+      )
+      (render-hash)
+    )
+
   (Func post-to-html post)
     (Do
       (Let redcloth
@@ -265,15 +295,7 @@
         )
       )
 
-      ;Render in the link to itself
-      (Let render-hash (Send :new :Hash))
-      (add-to-hash render-hash "link" 
-        (cat "/site/"
-          (cat post ".html")
-        )
-      )
-
-      (Let redcloth (fill-tag render-hash in redcloth))
+      (Let redcloth (fill-tag (Call create-render-hash-for-post post) in redcloth))
       
       (Let rc (Send (Cons :new redcloth) :RedCloth))
       (Send "to_html" rc)
