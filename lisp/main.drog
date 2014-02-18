@@ -14,7 +14,6 @@
         (Cons (Call f (Car list)) (Call map f (Cdr list)))
         (empty-list)
       )
-
     )
   
   ;Filter a list of items _x_ using a predicate _f_
