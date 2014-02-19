@@ -73,6 +73,9 @@
     (Do
       (Let found (Call find-from-args args))
       (Let editor-cmd (cat editor " "))
+
+      (LetMany (found (Call find-from-args args))
+               (editor-cmd (cat editor " ")))
       
       (Func open-editor post ~(editor-cmd))
         (Do
@@ -199,9 +202,10 @@
 
       (Func create-page posts)
         (Do
-          (Let post (Car posts))
-          (Let name (Car post))
-          (Let content (Car (Cdr (post))))
+          (LetMany
+            (post (Car posts))
+            (name (Car post))
+            (content (Car (Cdr (post)))))
 
           (Call create-html-page 
             (cat "./site/"
@@ -234,17 +238,19 @@
           (get-posts)
         )
       )
-
-      (Let posts (Send "to_a" posts))
-      (Let number-of-pages (Send :length posts))
-      (Let i 0)
+      
+      (LetMany
+        (posts (Send "to_a" posts))
+        (number-of-pages (Send :length posts))
+        (i 0))
 
       (Func name-and-render posts i)
         (Do
           ; Grab the current file name --- render it, and name it.
-          (Let current-page (Car posts))
-          (Let pages-rendered (Call map post-to-html current-page))
-          (Let file-name (Call create-file-name-for-paginated i))
+          (LetMany
+            (current-page (Car posts))
+            (pages-rendered (Call map post-to-html current-page))
+            (file-name (Call create-file-name-for-paginated i)))
     
           ; Write out the linkable page
           (Call create-linkable-file (Call zip-with current-page pages-rendered))
@@ -297,11 +303,12 @@
 
     )
   
-  ;For now (tired) just print out all rendered
   (Func build void)
     (Do
-      (Let posts (get-posts))
-      (Let html-list (Call map post-to-html posts))
+      (LetMany
+        (posts (get-posts))
+        (html-list (Call map post-to-html posts)))
+        
       (Send (Cons :join "") html-list)
     )
 
