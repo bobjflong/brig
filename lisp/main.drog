@@ -71,8 +71,6 @@
 
   (Func edit-file args)
     (Do
-      (Let found (Call find-from-args args))
-      (Let editor-cmd (cat editor " "))
 
       (LetMany (found (Call find-from-args args))
                (editor-cmd (cat editor " ")))
