@@ -205,17 +205,19 @@
             (name (Car post))
             (content (Car (Cdr (post)))))
 
-          (Call create-html-page 
-            (cat "./site/"
-              (cat name ".html")
-            )
-            content 0 0
-          )
+          (Call create-html-page (Call create-file-name-for-permalink name) content 0 0)
 
           (If (Cdr posts) (RecCall create-page (Cdr posts)) null)
         )
 
       (Call create-page posts)
+    )
+
+  (Func create-file-name-for-permalink name)
+    (Do
+      (cat "./site/"
+        (cat name ".html")
+      )
     )
 
   (Func create-file-name-for-paginated i)
