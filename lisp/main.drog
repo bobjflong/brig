@@ -196,7 +196,8 @@
   (Func create-linkable-file arg)
     (Do
       (Let posts arg)
-      (LoopUntil (not posts)
+
+      (Func create-page posts)
         (Do
           (Let post (Car posts))
           (Let name (Car post))
@@ -209,9 +210,10 @@
             content 0 0
           )
 
-          (Let posts (Cdr posts))
+          (If (Cdr posts) (RecCall create-page (Cdr posts)) null)
         )
-      )
+
+      (Call create-page posts)
     )
 
   (Func create-file-name-for-paginated i)
@@ -237,7 +239,7 @@
       (Let number-of-pages (Send :length posts))
       (Let i 0)
 
-      (LoopUntil (not posts)
+      (Func name-and-render posts i)
         (Do
           ; Grab the current file name --- render it, and name it.
           (Let current-page (Car posts))
@@ -254,10 +256,10 @@
             (- number-of-pages 1 )
           )
 
-          (Let i (+ i 1))
-          (Let posts (Cdr posts))
+          (If (Cdr posts) (RecCall name-and-render (Cdr posts) (+ i 1)) null)
         )
-      )
+      
+      (Call name-and-render posts i)
     )
 
   (Func view void)
