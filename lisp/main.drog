@@ -6,31 +6,6 @@
 
   (Func display x) (Do (Show x) )
 
-  ;Map a list of items _x_ with a function _f_
-  (Func map f x)
-    (Do
-      (Let list x)
-      (If list
-        (Cons (Call f (Car list)) (Call map f (Cdr list)))
-        (empty-list)
-      )
-    )
-  
-  ;Filter a list of items _x_ using a predicate _f_
-  (Func filter f x)
-    (Do
-      (Let res (empty-list))
-      (Let list x)
-
-      (If list
-        (If (Call f (Car list))
-          (Cons (Car list) (Call filter f (Cdr list)))
-          (Call filter f (Cdr list))
-        )
-        (empty-list)
-      )
-    )
-  
   (Func create-file name)
     (Do
       (exit-if-null name "No file name given")
@@ -46,6 +21,8 @@
       (Let search-terms (Send (Cons :drop 1) arg))
       ; => hello\-world
       (Let search-terms (Send (Cons :join "\-") search-terms))
+
+      (Send (Cons :new search-terms) :Regexp)
       ; => /hello\-world/
     )
 
