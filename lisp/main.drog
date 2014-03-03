@@ -207,6 +207,9 @@
       )
     )
 
+  (Func combine-string-list items)
+    (Do (Send (Cons :join "") items))
+
   (Func create-posts-html void)
     (Do
       (Let posts 
@@ -234,7 +237,7 @@
           
           ; Build the file by joining everything that has been rendered for this page
           (Call create-html-page file-name 
-            (Send (Cons :join "") pages-rendered)
+            (Call combine-string-list pages-rendered)
             i
             (- number-of-pages 1 )
           )
