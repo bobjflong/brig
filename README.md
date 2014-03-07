@@ -2,6 +2,8 @@
 
 brig is a static site generator written in drog\_lisp, and exists mainly as a non trivial example of drog\_lisp code. It uses the Textile markup language for writing posts.
 
+brig generates <a href="http://bobjflong.co">my blog</a>.
+
 ####Dependencies
 * ruby
 * drog\_lisp
