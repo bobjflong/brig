@@ -110,7 +110,7 @@ module BrigMacros
   
   def self.get_post_files
     LispMacro.new 'get-posts' do |ast|
-      """(Send (Cons :split \"\n\") (Send (Cons \"`\" \"ls -t posts/* 2> /dev/null \") :Kernel))"""
+      """(Send (Cons :split (Send :chr 10)) (Send (Cons \"`\" \"ls -t posts/* 2> /dev/null \") :Kernel))"""
     end
   end
 
