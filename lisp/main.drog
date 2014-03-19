@@ -11,8 +11,7 @@
       (exit-if-null name "No file name given")
       (newline)
       (Show (cat "Creating: " name))
-      (create-timestamped-file name)
-    )
+      (create-timestamped-file name))
 
   (Func create-regex-from args)
     (Do
@@ -22,20 +21,23 @@
       ; => hello\-world
       (Let search-terms (. (Cons :join "\-") search-terms))
 
-      (. (Cons :new search-terms) :Regexp)
+      (. (Cons :new search-terms) :Regexp))
       ; => /hello\-world/
-    )
+  
+  (Func get-posts void)
+    (Do
+      (Send 
+        (Cons :split (Send :chr 10))
+        (Send (Cons "`" "ls -t posts/* 2> /dev/null ") :Kernel)))
 
   (Func find-from-args args)
     (Do
       (Let regex (Call create-regex-from args))
       (Func matching val ~(regex))
         (Do
-          (. (Cons :match regex) val) 
-        )
+          (. (Cons :match regex) val))
       
-      (Call filter matching (get-posts))
-    )
+      (Call filter matching (Call get-posts void)))
 
   (Func perform-search args)
     (Do
@@ -43,8 +45,7 @@
       (newline)
       (Show (cat "Found: " (. "to_s" (. :length found))))
       (Call map display found)
-      (newline)
-    )
+      (newline))
 
   (Func edit-file args)
     (Do
@@ -55,31 +56,26 @@
       (Func open-editor post ~(editor-cmd))
         (Do
           (Let cmd (cat editor-cmd post))
-          (. (Cons :system cmd) :Kernel)
-        )
+          (. (Cons :system cmd) :Kernel))
 
-      (Call map open-editor found) 
-    )
+      (Call map open-editor found))
   
   ; Print out a list of posts currently stored
   (Func get-list-of-posts void)
     (Do
       (Func get-name f)
         (Do
-          (extract-filename f)
-        )
+          (extract-filename f))
 
-      (Let posts (get-posts))
+      (Let posts (Call get-posts void))
 
       (newline)
       (Call map display (Call map get-name posts))
-      (newline)
-    )
+      (newline))
 
   (Func open-editor void)
     (Do
-      (. (Cons :system editor) :Kernel)
-    )
+      (. (Cons :system editor) :Kernel))
 
   (Func generate-previous-page-link page-number)
     (Do
@@ -87,18 +83,13 @@
         ""
         (If (= page-number 1)
           "index.html"
-          (cat (. "to_s" (- page-number 1)) ".html")
-        )
-      )
-    )
+          (cat (. "to_s" (- page-number 1)) ".html"))))
 
   (Func generate-next-page-link page-number max)
     (Do
       (If (= page-number max)
         ""
-        (cat (. "to_s" (+ page-number 1)) ".html")
-      )
-    )
+        (cat (. "to_s" (+ page-number 1)) ".html")))
 
   (Func create-link to name)
     (Do
@@ -106,12 +97,22 @@
         (cat
           (cat "<a href=\'" to)
           (cat "\'>"
-            (cat name "</a>")
-          )
-        )
-        ""
-      )
-    )
+            (cat name "</a>")))
+        ""))
+
+  (Func create-render-hash-for-page html page-number max)
+    (Do
+      (Let render-hash (. :new :Hash))
+      (add-to-hash render-hash "yield" html)
+      (add-to-hash render-hash "prev_page"
+        (Call create-link
+          (Call generate-previous-page-link page-number)
+          "< prev"))
+      (add-to-hash render-hash "next_page"
+        (Call create-link
+          (Call generate-next-page-link page-number max)
+          "next >"))
+      (render-hash))
 
  ; ======================================================================= 
  ; create-html-page
@@ -121,55 +122,25 @@
  ; page-number - the number of the current page (used for pagination)
  ; the max number of pages (used to generate next link)
  ;========================================================================
-  
-  (Func create-render-hash-for-page html page-number max)
-    (Do
-      (Let render-hash (. :new :Hash))
-      (add-to-hash render-hash "yield" html)
-      (add-to-hash render-hash "prev_page"
-        (Call create-link
-          (Call generate-previous-page-link page-number)
-          "< prev"
-        )
-      )
-      (add-to-hash render-hash "next_page"
-        (Call create-link
-          (Call generate-next-page-link page-number max)
-          "next >"
-        )
-      )
-      (render-hash)
-    )
-
   (Func create-html-page page html page-number max)
     (Do
       ;Load the layout.html
       (Let layout
-        (. (Cons :read template-location)
-              :File
-        )
-      )
+        (.(Cons :read template-location) :File ))
       
       ; Process the template page by passing in the html content and pagination links
       ; These are stored in the render hash as keys: yield, next_page, prev_page
       (Let processed
-        (fill-tag (Call create-render-hash-for-page html page-number max) in layout)
-      )
+        (fill-tag (Call create-render-hash-for-page html page-number max) in layout))
 
-      (.
-        (Cons :write (Cons page processed))
-        :File
-      )
-
+      (. (Cons :write (Cons page processed)) :File)
       (newline)
-      (Show (cat "Built: " page))
-    )
+      (Show (cat "Built: " page)))
 
   (Func zip-with left right)
     (Do
       (Let zip-instr (Cons "zip" (Cons right (empty-list))))
-      (. zip-instr left)
-    )
+      (. zip-instr left))
 
   (Func create-linkable-file arg)
     (Do
@@ -181,31 +152,22 @@
             (post (Car posts))
             (name (Car post))
             (content (Car (Cdr (post)))))
-
           (Call create-html-page (Call create-file-name-for-permalink name) content 0 0)
+          (If (Cdr posts) (RecCall create-page (Cdr posts)) null))
 
-          (If (Cdr posts) (RecCall create-page (Cdr posts)) null)
-        )
-
-      (Call create-page posts)
-    )
+      (Call create-page posts))
 
   (Func create-file-name-for-permalink name)
     (Do
       (cat "./site/"
-        (cat name ".html")
-      )
-    )
+        (cat name ".html")))
 
   (Func create-file-name-for-paginated i)
     (Do
       (Let file-name
         (If (= i 0)
           "./site/index.html"
-          (cat (cat "./site/" (. "to_s" i)) ".html")
-        )
-      )
-    )
+          (cat (cat "./site/" (. "to_s" i)) ".html"))))
 
   (Func combine-string-list items)
     (Do (. (Cons :join "") items))
@@ -215,9 +177,7 @@
       (Let posts 
         (.
           (Cons "each_slice" page-size)
-          (get-posts)
-        )
-      )
+          (Call get-posts void)))
       
       (LetMany
         (posts (. "to_a" posts))
@@ -237,58 +197,45 @@
           (Call create-html-page file-name 
             (Call combine-string-list pages-rendered)
             i
-            (- number-of-pages 1 )
-          )
+            (- number-of-pages 1 ))
 
-          (If (Cdr posts) (RecCall name-and-render (Cdr posts) (+ i 1)) null)
-        )
+          (If (Cdr posts) (RecCall name-and-render (Cdr posts) (+ i 1)) null))
       
-      (Call name-and-render posts i)
-    )
+      (Call name-and-render posts i))
 
   (Func view void)
     (Do
       (.
         (Cons :system server-cmd)
-        :Kernel
-      )
-    )
+        :Kernel))
 
   (Func create-render-hash-for-post post)
     (Do
       (Let render-hash (. :new :Hash))
       (add-to-hash render-hash "link" 
         (cat "/site/"
-          (cat post ".html")
-        )
-      )
-      (render-hash)
-    )
+          (cat post ".html")))
+      (render-hash))
 
   (Func post-to-html post)
     (Do
       (Let redcloth
         (.
           (Cons :read post)
-          :File
-        )
-      )
+          :File))
 
       (Let redcloth (fill-tag (Call create-render-hash-for-post post) in redcloth))
       
       (Let rc (. (Cons :new redcloth) :RedCloth))
-      (. "to_html" rc)
-
-    )
+      (. "to_html" rc))
   
   (Func build void)
     (Do
       (LetMany
-        (posts (get-posts))
+        (posts (Call get-posts void))
         (html-list (Call map post-to-html posts)))
         
-      (. (Cons :join "") html-list)
-    )
+      (. (Cons :join "") html-list))
 
   (Func dispatch cmd)
     (Do
@@ -316,9 +263,7 @@
         )
         ("view"
           (Call view void)
-        )
-      )
-    )
+        )))
 
   (Call dispatch (arg 0))
   
