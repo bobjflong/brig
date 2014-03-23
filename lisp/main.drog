@@ -23,10 +23,10 @@
 
       (. (Cons :new search-terms) :Regexp))
       ; => /hello\-world/
-  
+
   (Func get-posts void)
     (Do
-      (Send 
+      (Send
         (Cons :split (Send :chr 10))
         (Send (Cons "`" "ls -t posts/* 2> /dev/null ") :Kernel)))
 
@@ -36,7 +36,7 @@
       (Func matching val ~(regex))
         (Do
           (. (Cons :match regex) val))
-      
+
       (Call filter matching (Call get-posts void)))
 
   (Func perform-search args)
@@ -52,14 +52,14 @@
 
       (LetMany (found (Call find-from-args args))
                (editor-cmd (cat editor " ")))
-      
+
       (Func open-editor post ~(editor-cmd))
         (Do
           (Let cmd (cat editor-cmd post))
           (. (Cons :system cmd) :Kernel))
 
       (Call map open-editor found))
-  
+
   ; Print out a list of posts currently stored
   (Func get-list-of-posts void)
     (Do
@@ -114,7 +114,7 @@
           "next >"))
       (render-hash))
 
- ; ======================================================================= 
+ ; =======================================================================
  ; create-html-page
  ; given:
  ; page - the name of the post
@@ -127,7 +127,7 @@
       ;Load the layout.html
       (Let layout
         (.(Cons :read template-location) :File ))
-      
+
       ; Process the template page by passing in the html content and pagination links
       ; These are stored in the render hash as keys: yield, next_page, prev_page
       (Let processed
@@ -174,11 +174,11 @@
 
   (Func create-posts-html void)
     (Do
-      (Let posts 
+      (Let posts
         (.
           (Cons "each_slice" page-size)
           (Call get-posts void)))
-      
+
       (LetMany
         (posts (. "to_a" posts))
         (number-of-pages (. :length posts))
@@ -194,13 +194,13 @@
           ; Write out the linkable page
           (Call create-linkable-file (Call zip-with current-page pages-rendered))
           ; Build the file by joining everything that has been rendered for this page
-          (Call create-html-page file-name 
+          (Call create-html-page file-name
             (Call combine-string-list pages-rendered)
             i
             (- number-of-pages 1 ))
 
           (If (Cdr posts) (RecCall name-and-render (Cdr posts) (+ i 1)) null))
-      
+
       (Call name-and-render posts i))
 
   (Func view void)
@@ -212,7 +212,7 @@
   (Func create-render-hash-for-post post)
     (Do
       (Let render-hash (. :new :Hash))
-      (add-to-hash render-hash "link" 
+      (add-to-hash render-hash "link"
         (cat "/site/"
           (cat post ".html")))
       (render-hash))
@@ -225,16 +225,16 @@
           :File))
 
       (Let redcloth (fill-tag (Call create-render-hash-for-post post) in redcloth))
-      
+
       (Let rc (. (Cons :new redcloth) :RedCloth))
       (. "to_html" rc))
-  
+
   (Func build void)
     (Do
       (LetMany
         (posts (Call get-posts void))
         (html-list (Call map post-to-html posts)))
-        
+
       (. (Cons :join "") html-list))
 
   (Func dispatch cmd)
@@ -259,12 +259,12 @@
           (Call publish void)
         )
         ("build"
-          (Call create-posts-html void) 
+          (Call create-posts-html void)
         )
         ("view"
           (Call view void)
         )))
 
   (Call dispatch (arg 0))
-  
+
 )
