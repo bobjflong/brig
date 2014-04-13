@@ -65,7 +65,8 @@
     (Do
       (Func get-name f)
         (Do
-          (extract-filename f))
+          ((Send "all_but_last"
+            (Send (Cons :split "-") f))))
 
       (Let posts (Call get-posts void))
 
@@ -151,7 +152,7 @@
           (LetMany
             (post (Car posts))
             (name (Car post))
-            (content (Car (Cdr (post)))))
+            (content (Car (Cdr post))))
           (Call create-html-page (Call create-file-name-for-permalink name) content 0 0)
           (If (Cdr posts) (RecCall create-page (Cdr posts)) null))
 
@@ -209,12 +210,25 @@
         (Cons :system server-cmd)
         :Kernel))
 
+  (Func timestamp-for-post post)
+    (Do
+      (Let file (Send (`(:new  post)) :File))
+      (send_all
+        "iso8601"
+        "utc"
+        "ctime"
+        file))
+
   (Func create-render-hash-for-post post)
     (Do
       (Let render-hash (. :new :Hash))
       (add-to-hash render-hash "link"
         (cat "/site/"
           (cat post ".html")))
+
+      (add-to-hash render-hash "updated"
+        (Call timestamp-for-post post))
+      
       (render-hash))
 
   (Func post-to-html post)
@@ -223,11 +237,12 @@
         (.
           (Cons :read post)
           :File))
-
-      (Let redcloth (fill-tag (Call create-render-hash-for-post post) in redcloth))
+      
+      (Let tags (Call create-render-hash-for-post post))
+      (Let redcloth (fill-tag tags in redcloth))
 
       (Let rc (. (Cons :new redcloth) :RedCloth))
-      (. "to_html" rc))
+      (cat "<article>" (cat (. "to_html" rc) "</article>")))
 
   (Func build void)
     (Do

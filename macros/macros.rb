@@ -101,13 +101,6 @@ module BrigMacros
     end
   end
 
-  def self.extract_filename
-    LispMacro.new 'extract-filename' do |ast|
-      name = ast[1].to_sxp
-      """(Send \"all_but_last\" (Send (Cons :split \"-\") #{name}))"""
-    end
-  end
-
   def self.empty_list
     LispMacro.new 'empty-list' do |ast|
       """(Send :new :Array)"""
@@ -173,7 +166,7 @@ module BrigMacros
   end
 
   def self.macros
-    MacroList.new [BrigMacros.display_version, BrigMacros.cat, BrigMacros.arg, BrigMacros.case, BrigMacros.eq,BrigMacros.null_warning, BrigMacros.create_file, BrigMacros.extract_filename,
+    MacroList.new [BrigMacros.display_version, BrigMacros.cat, BrigMacros.arg, BrigMacros.case, BrigMacros.eq,BrigMacros.null_warning, BrigMacros.create_file,
     BrigMacros.empty_list, BrigMacros.not, BrigMacros.newline,
     BrigMacros.get_entered_name, BrigMacros.fill_tag, BrigMacros.index_location,
     BrigMacros.add_to_hash, BrigMacros.let_many]

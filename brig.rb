@@ -4,6 +4,7 @@ require 'drog_lisp'
 require 'drog_lisp/sexprparser'
 require 'redcloth'
 require 'mustache'
+require 'time'
 
 require './macros/macros'
 
