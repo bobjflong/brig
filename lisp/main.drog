@@ -99,12 +99,12 @@
   (Func create-render-hash-for-page html page-number max)
     (Do
       (Let render-hash (. :new :Hash))
-      (add-to-hash render-hash "yield" html)
-      (add-to-hash render-hash "prev_page"
+      (Call add-to-hash render-hash "yield" html)
+      (Call add-to-hash render-hash "prev_page"
         (Call create-link
           (Call generate-previous-page-link page-number)
           "< prev"))
-      (add-to-hash render-hash "next_page"
+      (Call add-to-hash render-hash "next_page"
         (Call create-link
           (Call generate-next-page-link page-number max)
           "next >"))
@@ -137,6 +137,10 @@
     (Do
       (Let zip-instr (Cons "zip" (Cons right (empty-list))))
       (. zip-instr left))
+
+  (Func add-to-hash hash key val)
+    (Do
+      (Send (Cons "[]=" (Cons key val)) hash))
 
   (Func create-linkable-file arg)
     (Do
@@ -217,11 +221,11 @@
   (Func create-render-hash-for-post post)
     (Do
       (Let render-hash (. :new :Hash))
-      (add-to-hash render-hash "link"
+      (Call add-to-hash render-hash "link"
         (cat "/site/"
           (cat post ".html")))
 
-      (add-to-hash render-hash "updated"
+      (Call add-to-hash render-hash "updated"
         (Call timestamp-for-post post))
       
       (render-hash))

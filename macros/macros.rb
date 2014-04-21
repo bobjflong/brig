@@ -2,9 +2,6 @@
 require 'mustache'
 
 class Array
-  def all_but_last
-    self[0..-2].join("-")
-  end
   def flat_zip *args
     arg = *args
     zip arg
@@ -146,15 +143,6 @@ module BrigMacros
     end
   end
 
-  def self.add_to_hash
-    LispMacro.new 'add-to-hash' do |ast|
-      hash = ast[1].to_sxp
-      key = ast[2].to_sxp
-      val = ast[3].to_sxp
-      """(Send (Cons \"[]=\" (Cons #{key} #{val})) #{hash})"""
-    end
-  end
-
   def self.let_many
     LispMacro.new 'LetMany' do |ast|
       res = ""
@@ -169,7 +157,7 @@ module BrigMacros
     MacroList.new [BrigMacros.display_version, BrigMacros.cat, BrigMacros.arg, BrigMacros.case, BrigMacros.eq,BrigMacros.null_warning, BrigMacros.create_file,
     BrigMacros.empty_list, BrigMacros.not, BrigMacros.newline,
     BrigMacros.get_entered_name, BrigMacros.fill_tag, BrigMacros.index_location,
-    BrigMacros.add_to_hash, BrigMacros.let_many]
+    BrigMacros.let_many]
   end
 
 end
