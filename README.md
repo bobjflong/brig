@@ -31,4 +31,4 @@ brig generates <a href="http://bobjflong.co">my blog</a>.
 ####Templates
 <code>templates/layout.html</code> will be where your post(s) are rendered. This page provides a <code>{{{ yield }}}</code> tag designating where your post(s) should go. It also provides <code>{{{ next\_page }}}</code> and <code>{{{ prev\_page }}}</code> tags for pagination links.
 
-Individual posts are provided with a  <code>{{{ link }}}</code> tag for permalinks.
+Individual posts are provided with a  <code>{{{ link }}}</code> tag for permalinks, and a <code>{{{ updated }}}</code> tag with the ctime of the file.
