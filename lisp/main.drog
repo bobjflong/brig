@@ -15,14 +15,9 @@
 
   (Func create-regex-from args)
     (Do
-      ; search hello world
-      ; => hello world
       (Let search-terms (. (Cons :drop 1) arg))
-      ; => hello\-world
       (Let search-terms (. (Cons :join "\-") search-terms))
-
       (. (Cons :new search-terms) :Regexp))
-      ; => /hello\-world/
 
   (Func get-posts void)
     (Do
@@ -43,7 +38,7 @@
     (Do
       (Let found (Call find-from-args args))
       (newline)
-      (Show (cat "Found: " (. "to_s" (. :length found))))
+      (Show (cat "Found: " (. :to_s (. :length found))))
       (Call map display found)
       (newline))
 
@@ -65,7 +60,7 @@
     (Do
       (Func get-name f)
         (Do
-          ((Send "all_but_last"
+          ((-> (Cons :join "-") (Cons :[] (. (Cons :new (Cons 0 (- 0 2))) :Range))
             (Send (Cons :split "-") f))))
 
       (Let posts (Call get-posts void))
@@ -84,13 +79,13 @@
         ""
         (If (= page-number 1)
           "index.html"
-          (cat (. "to_s" (- page-number 1)) ".html"))))
+          (cat (. :to_s (- page-number 1)) ".html"))))
 
   (Func generate-next-page-link page-number max)
     (Do
       (If (= page-number max)
         ""
-        (cat (. "to_s" (+ page-number 1)) ".html")))
+        (cat (. :to_s (+ page-number 1)) ".html")))
 
   (Func create-link to name)
     (Do
@@ -168,7 +163,7 @@
       (Let file-name
         (If (= i 0)
           "./site/index.html"
-          (cat (cat "./site/" (. "to_s" i)) ".html"))))
+          (cat (cat "./site/" (. :to_s i)) ".html"))))
 
   (Func combine-string-list items)
     (Do (. (Cons :join "") items))
@@ -177,11 +172,11 @@
     (Do
       (Let posts
         (.
-          (Cons "each_slice" page-size)
+          (Cons :each_slice page-size)
           (Call get-posts void)))
 
       (LetMany
-        (posts (. "to_a" posts))
+        (posts (. :to_a posts))
         (number-of-pages (. :length posts))
         (i 0))
 
@@ -213,10 +208,10 @@
   (Func timestamp-for-post post)
     (Do
       (Let file (Send (`(:new  post)) :File))
-      (send_all
+      (->
         "iso8601"
-        "utc"
-        "ctime"
+        :utc
+        :ctime
         file))
 
   (Func create-render-hash-for-post post)
@@ -242,7 +237,7 @@
       (Let redcloth (fill-tag tags in redcloth))
 
       (Let rc (. (Cons :new redcloth) :RedCloth))
-      (cat "<article>" (cat (. "to_html" rc) "</article>")))
+      (cat "<article>" (cat (. :to_html rc) "</article>")))
 
   (Func build void)
     (Do
@@ -254,7 +249,7 @@
 
   (Func dispatch cmd)
     (Do
-      (case (. "to_s" cmd)
+      (case (. :to_s cmd)
         ("new"
           (Call create-file (get-entered-name))
         )
