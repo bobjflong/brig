@@ -143,21 +143,10 @@ module BrigMacros
     end
   end
 
-  def self.let_many
-    LispMacro.new 'LetMany' do |ast|
-      res = ""
-      ast.drop(1).each do |let|
-        res += [:Let, let.first, let.drop(1).first].to_sxp
-      end
-      res
-    end
-  end
-
   def self.macros
     MacroList.new [BrigMacros.display_version, BrigMacros.cat, BrigMacros.arg, BrigMacros.case, BrigMacros.eq,BrigMacros.null_warning, BrigMacros.create_file,
     BrigMacros.empty_list, BrigMacros.not, BrigMacros.newline,
-    BrigMacros.get_entered_name, BrigMacros.fill_tag, BrigMacros.index_location,
-    BrigMacros.let_many]
+    BrigMacros.get_entered_name, BrigMacros.fill_tag, BrigMacros.index_location]
   end
 
 end
